@@ -5,14 +5,14 @@ define(
 function(openhmis) {
 	openhmis.DrugOrder = openhmis.GenericModel.extend({
 		meta: {
-			name: "Drug Order",
-			namePlural: "Drug Orders"
+			name: "Drug Order"
 		},
 		
 		schema: {
 			drug: { type: "Text" },
+			daw: { type: "Checkbox", title: "DAW" },
 			frequency: { type: "Text" },
-			prn: { type: "Checkbox" },
+			prn: { type: "Checkbox", title: "PRN" },
 			duration: { type: "Text" },
 			instructions: { type: "TextArea"}
 		}

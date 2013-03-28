@@ -3,7 +3,7 @@
 <%@ include file="template/localHeader.jsp"%>
 <openmrs:htmlInclude file="/moduleResources/openhmis/pharmacy/js/screen/entry.js" />
 
-<h1><openmrs:message code="openhmis.pharmacy.prescriptionEntry" /></h1>
+<h2><openmrs:message code="openhmis.pharmacy.prescriptionEntry" /></h2>
 
 
 <%@ include file="/WEB-INF/template/footer.jsp"%>

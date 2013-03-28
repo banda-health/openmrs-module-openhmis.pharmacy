@@ -9,16 +9,16 @@ curl(
 function($, openhmis) {
 	$(function() {
 		var drugOrderList = new openhmis.GenericCollection([], { model: openhmis.DrugOrder });
-		var drugOrderListView = new openhmis.DrugOrderListView({
+		var drugOrderEntryView = new openhmis.DrugOrderEntryView({
 			model: drugOrderList,
 			showRetiredOption: false,
 			showPaging: false,
 			itemActions: ["inlineEdit", "remove"]
 		});
 		
-		$("#content").append(drugOrderListView.el);
-		drugOrderListView.render();
-		drugOrderListView.model.add(new openhmis.DrugOrder({
+		$("#content").append(drugOrderEntryView.el);
+		drugOrderEntryView.render();
+		drugOrderEntryView.model.add(new openhmis.DrugOrder({
 			drug: "Amoxicillin 250mg",
 			frequency: "3/day",
 			duration: "10 days",
