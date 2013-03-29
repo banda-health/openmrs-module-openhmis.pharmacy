@@ -18,11 +18,6 @@ function($, openhmis) {
 		
 		$("#content").append(drugOrderEntryView.el);
 		drugOrderEntryView.render();
-		drugOrderEntryView.model.add(new openhmis.DrugOrder({
-			drug: "Amoxicillin 250mg",
-			frequency: "3/day",
-			duration: "10 days",
-			instructions: "Take with food and water.\nDo not take with jelly beans."
-		}));
+		drugOrderEntryView.setupNewItem();
 	});
 });

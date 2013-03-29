@@ -1,0 +1,25 @@
+/** Prescription Entry *************************/
+.drugOrderEntry th.field-drug { width: 30%; }
+.drugOrderEntry td.field-drug input[type="text"] { width: 100%; }
+.drugOrderEntry th.field-frequency,
+.drugOrderEntry th.field-duration { width: 13%; }
+.drugOrderEntry td.field-frequency input,
+.drugOrderEntry td.field-duration input { width: 100%; }
+.drugOrderEntry td.field-prn { width: 40px; }
+th.field-instructions { width: 30%; }
+td.field-instructions .editor {
+	top: 0; left: 0;
+	position: relative;
+	display: block;
+	width: 100%;
+	height: 1.6em;
+	overflow: hidden;
+}
+td.field-instructions textarea {
+	position: absolute;
+	top:0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border: 1px solid cadetblue;
+}

@@ -36,15 +36,19 @@ function($, _, Backbone, openhmis) {
 		}
 	});
 	
-	openhmis.DrugOrderEntryView = openhmis.GenericListView.extend({
+	openhmis.DrugOrderEntryView = openhmis.GenericListEntryView.extend({
 		className: "drugOrderEntry",
 		initialize: function(options) {
 			openhmis.GenericListView.prototype.initialize.call(this, options);
 			this.itemView = openhmis.DrugOrderEntryItemView;
 		},
 		
+		//schema: {
+		//	"drug": { type: "Autocomplete", options: new openhmis.GenericCollection([], { model: openhmis.Department }) }
+		//},
+		
 		render: function() {
-			openhmis.GenericListView.prototype.render.call(this);
+			openhmis.GenericListEntryView.prototype.render.call(this, { options: { listTitle: "Patient's Prescriptions" }});
 			return this;
 		}
 	});
