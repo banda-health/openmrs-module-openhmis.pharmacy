@@ -12,21 +12,26 @@ define(
 function($, _, Backbone, openhmis) {
 	openhmis.DrugOrderEntryItemView = openhmis.GenericListItemView.extend({
 		initialize: function(options) {
+			_.bindAll(this, "expandInstructions", "collapseInstructions");
 			openhmis.GenericListItemView.prototype.initialize.call(this, options);
 			this.form.on("instructions:focus", this.expandInstructions);
 			this.form.on("instructions:blur", this.collapseInstructions);
 		},
 		
-		expandInstructions: function() {
-			$instructEditor = this.$("td.field-instructions .editor")
+		expandInstructions: function(event) {
+			$instructEditor = this.$("td.field-instructions .editor");
 			$instructEditor.css("overflow", "visible");
-			$instructEditor.find("textarea").animate({ height: "5em" }, 200);
+			$instructEditor.find("textarea").css("z-index", "999");
+			$instructEditor.find("textarea").stop().animate({ height: "5em" }, 200, function() {});
 		},
 		
-		collapseInstructions: function() {
-			$instructEditor = this.$("td.field-instructions .editor")
-			$instructEditor.find("textarea").animate({ height: "100%" }, 200, function() {
+		collapseInstructions: function(event) {
+			$instructEditor = this.$("td.field-instructions .editor");
+			var self = this;
+			$instructEditor.find("textarea").stop().animate({ height: "100%" }, 100, function() {
+				$instructEditor = self.$("td.field-instructions .editor")
 				$instructEditor.css("overflow", "hidden");
+				$instructEditor.find("textarea").css("z-index", "1");
 			});
 		},
 		
