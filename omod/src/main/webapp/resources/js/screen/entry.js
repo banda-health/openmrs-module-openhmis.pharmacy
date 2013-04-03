@@ -3,8 +3,8 @@ curl(
 [
 	openhmis.url.backboneBase + 'js/lib/jquery',
 	openhmis.url.backboneBase + 'js/openhmis',
-	openhmis.url.pharmacyBase + 'js/model/drugOrder',
-	openhmis.url.pharmacyBase + 'js/view/drugOrder'
+	openhmis.url.pharmacyBase + 'js/model/drug',
+	openhmis.url.pharmacyBase + 'js/view/drug'
 ],
 function($, openhmis) {
 	$(function() {

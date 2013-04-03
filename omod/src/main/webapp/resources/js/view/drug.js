@@ -7,7 +7,8 @@ define(
 	'link!' + openhmis.url.pharmacyBase + 'css/style.css',
 	openhmis.url.backboneBase + 'js/lib/i18n',
 	openhmis.url.backboneBase + 'js/lib/backbone-forms',
-	openhmis.url.backboneBase + 'js/view/editors'
+	openhmis.url.backboneBase + 'js/view/editors',
+	openhmis.url.pharmacyBase + 'js/model/drug'
 ],
 function($, _, Backbone, openhmis) {
 	openhmis.DrugOrderEntryItemView = openhmis.GenericListItemView.extend({
@@ -16,6 +17,7 @@ function($, _, Backbone, openhmis) {
 			openhmis.GenericListItemView.prototype.initialize.call(this, options);
 			this.form.on("instructions:focus", this.expandInstructions);
 			this.form.on("instructions:blur", this.collapseInstructions);
+			this.form.on("drug:select", this.onSelectDrug);
 		},
 		
 		expandInstructions: function(event) {
@@ -41,6 +43,19 @@ function($, _, Backbone, openhmis) {
 		}
 	});
 	
+	openhmis.QxHDrugFrequency = openhmis.GenericModel.extend({
+		initialize: function(options) {
+			this.on("change:display", this.updateValue);
+		},		
+		updateValue: function() {
+			var everyXHours = parseInt(this.get("display").charAt(1));
+			if (isNaN(everyXHours))
+				this.set("value", this.get("display"));
+			else
+				this.set("value", Math.floor(24 / everyXHours));
+		}
+	});
+	
 	openhmis.DrugOrderEntryView = openhmis.GenericListEntryView.extend({
 		className: "drugOrderEntry",
 		initialize: function(options) {
@@ -48,9 +63,22 @@ function($, _, Backbone, openhmis) {
 			this.itemView = openhmis.DrugOrderEntryItemView;
 		},
 		
-		//schema: {
-		//	"drug": { type: "Autocomplete", options: new openhmis.GenericCollection([], { model: openhmis.Department }) }
-		//},
+		schema: {
+			"drug": { type: "Autocomplete", options: new openhmis.GenericCollection([], { model: openhmis.Drug }) },
+			"frequency": { type: "Autocomplete", minLength: 1, options: new Backbone.Collection([
+				new openhmis.GenericModel({ display: "1/day", value: 1 }),
+				new openhmis.GenericModel({ display: "QD", value: 1 }),
+				new openhmis.GenericModel({ display: "OD", value: 1 }),
+				new openhmis.GenericModel({ display: "2/day", value: 1 }),
+				new openhmis.GenericModel({ display: "BID", value: 2 }),
+				new openhmis.GenericModel({ display: "3/day", value: 1 }),
+				new openhmis.GenericModel({ display: "TID", value: 3 }),
+				new openhmis.GenericModel({ display: "4/day", value: 1 }),
+				new openhmis.GenericModel({ display: "QID", value: 4 }),
+				new openhmis.GenericModel({ display: "PRN", value: "PRN" }),
+				new openhmis.GenericModel({ display: "QHS", value: 1 })
+			])}
+		},
 		
 		render: function() {
 			openhmis.GenericListEntryView.prototype.render.call(this, { options: { listTitle: "Patient's Prescriptions" }});
