@@ -35,6 +35,7 @@ function(openhmis, __) {
 			frequency: { type: "Text" },
 			prn: { type: "Checkbox", title: "PRN" },
 			duration: { type: "Text" },
+			quantity: { type: "Number" },
 			instructions: { type: "TextArea"}
 		},
 		

@@ -7,7 +7,7 @@ define(
 	'link!' + openhmis.url.pharmacyBase + 'css/style.css',
 	openhmis.url.backboneBase + 'js/lib/i18n',
 	openhmis.url.backboneBase + 'js/lib/backbone-forms',
-	openhmis.url.backboneBase + 'js/view/editors',
+	openhmis.url.pharmacyBase + 'js/view/editors',
 	openhmis.url.pharmacyBase + 'js/model/drug'
 ],
 function($, _, Backbone, openhmis) {
@@ -64,8 +64,8 @@ function($, _, Backbone, openhmis) {
 		},
 		
 		schema: {
-			"drug": { type: "Autocomplete", options: new openhmis.GenericCollection([], { model: openhmis.Drug }) },
-			"frequency": { type: "Autocomplete", minLength: 1, options: new Backbone.Collection([
+			drug: { type: "Autocomplete", options: new openhmis.GenericCollection([], { model: openhmis.Drug }) },
+			frequency: { type: "Autocomplete", minLength: 1, options: new Backbone.Collection([
 				new openhmis.GenericModel({ display: "1/day", value: 1 }),
 				new openhmis.GenericModel({ display: "QD", value: 1 }),
 				new openhmis.GenericModel({ display: "OD", value: 1 }),
@@ -77,7 +77,9 @@ function($, _, Backbone, openhmis) {
 				new openhmis.GenericModel({ display: "QID", value: 4 }),
 				new openhmis.GenericModel({ display: "PRN", value: "PRN" }),
 				new openhmis.GenericModel({ display: "QHS", value: 1 })
-			])}
+			])},
+			prn: { type: "Checkbox", title: "PRN", hidden: true },
+			duration: { type: "Duration", minLength: 1 },
 		},
 		
 		render: function() {
