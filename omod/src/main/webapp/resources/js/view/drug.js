@@ -18,6 +18,8 @@ function($, _, Backbone, openhmis) {
 			this.form.on("instructions:focus", this.expandInstructions);
 			this.form.on("instructions:blur", this.collapseInstructions);
 			this.form.on("drug:select", this.onSelectDrug);
+			this.form.on("frequency:change", this.updateQuantity);
+			this.form.on("duration:change", this.updateQuantity);
 		},
 		
 		expandInstructions: function(event) {
@@ -35,6 +37,15 @@ function($, _, Backbone, openhmis) {
 				$instructEditor.css("overflow", "hidden");
 				$instructEditor.find("textarea").css("z-index", "1");
 			});
+		},
+		
+		updateQuantity: function(event) {
+			var frequencyModel = this.form.getValue("frequency");
+			try { var frequency = frequencyModel.get("value") }
+			catch (e) { /* Abort if frequencyModel is not a model */ return }
+			var duration = this.form.fields["duration"].editor.getDays();
+			if (frequency && duration)
+				this.form.setValue("quantity", frequency * duration);
 		},
 		
 		render: function() {
@@ -69,11 +80,11 @@ function($, _, Backbone, openhmis) {
 				new openhmis.GenericModel({ display: "1/day", value: 1 }),
 				new openhmis.GenericModel({ display: "QD", value: 1 }),
 				new openhmis.GenericModel({ display: "OD", value: 1 }),
-				new openhmis.GenericModel({ display: "2/day", value: 1 }),
+				new openhmis.GenericModel({ display: "2/day", value: 2 }),
 				new openhmis.GenericModel({ display: "BID", value: 2 }),
-				new openhmis.GenericModel({ display: "3/day", value: 1 }),
+				new openhmis.GenericModel({ display: "3/day", value: 3 }),
 				new openhmis.GenericModel({ display: "TID", value: 3 }),
-				new openhmis.GenericModel({ display: "4/day", value: 1 }),
+				new openhmis.GenericModel({ display: "4/day", value: 4 }),
 				new openhmis.GenericModel({ display: "QID", value: 4 }),
 				new openhmis.GenericModel({ display: "PRN", value: "PRN" }),
 				new openhmis.GenericModel({ display: "QHS", value: 1 })
