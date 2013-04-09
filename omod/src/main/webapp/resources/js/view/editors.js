@@ -22,7 +22,12 @@ function($, Backbone, _, __) {
 			if (this.schema.options === undefined)
 				this.schema.options = this.suggestDuration;
 			editors.Autocomplete.prototype.initialize.call(this, options);
-			this.cache = {};
+			// Cached duration in number of days.  Text is used to check if the
+			// text input is the same as when the value was cached
+			this.days = {
+				value: undefined,
+				text: undefined
+			}
 		},
 		
 		durationTypes: [
@@ -51,38 +56,46 @@ function($, Backbone, _, __) {
 			resultCallback(suggestions);
 		},
 		
-		onSelect: function(event, ui) {
-			var lengthInSeconds = openhmis.fromFuzzyDate(ui.item.value);
-			var startDate = this.$startDate.datepicker("getDate");
-			if (startDate) {
-				var endDate = new Date(startDate.getTime() + (lengthInSeconds * 1000));
-				this.setEndDate(endDate);
-			}
-		},
-		
 		showDatePicker: function(event) {
 			this.$text.datepicker("option", "disabled", false);
 			this.$text.datepicker("option", "onClose", this.onDatepickerClose);
 			this.$text.datepicker("show");
 		},
 		
-		setStartDate: function(date) {
-			this.setDate("Start", date);
+		setStartDate: function(date, options) {
+			this.setDate("Start", date, options);
 			this.$endDate.datepicker("option", "minDate", new Date(date.getTime() + 1000*60*60*24));
 		},
 
-		setEndDate: function(date) {
-			this.setDate("End", date);
+		setEndDate: function(date, options) {
+			this.setDate("End", date, options);
 		},
 		
-		setDate: function(startOrEnd, date) {
+		setDate: function(startOrEnd, date, options) {
 			var $dateEl = startOrEnd === "Start" ? this.$startDate : this.$endDate;
 			var $buttonEl = $dateEl.siblings(".edit-"+startOrEnd.toLowerCase()+"-date");
 
 			$dateEl.datepicker("setDate", date);
 			var title = __(startOrEnd + " date: ") + $dateEl.val() + __(" (edit)");
 			$buttonEl.attr("title", title);
+			if (options && options.silent) return; // don't do text update
 			this.updateTextDate();
+			this.updateDaysValue();
+		},
+		
+		getDays: function() {
+			if (this.days.value && this.days.text === this.$text.val())
+				return this.days.value;
+			return undefined;
+		},
+		
+		updateDaysValue: function() {
+			var duration = this.$endDate.datepicker("getDate") - this.$startDate.datepicker("getDate");
+			var days = Math.floor(duration / 1000 / 60 / 60 / 24);
+			if (days > 0) {
+				this.days.value = days;
+				this.days.text = this.$text.val();
+			}
 		},
 		
 		updateTextDate: function() {
@@ -94,17 +107,29 @@ function($, Backbone, _, __) {
 			}
 		},
 		
+		updateDateFromText: function(event) {
+			var seconds = openhmis.fromFuzzyDate(this.$text.val());
+			if (seconds === undefined)
+				this.setEndDate(null);
+			else
+				this.setEndDate(new Date(this.$startDate.datepicker("getDate").getTime() + (seconds * 1000)), { silent: true });
+		},
+		
 		render: function() {
 			var template = this.getTemplate();
 			this.$el.html(template());
 			editors.Autocomplete.prototype.render.call(this);
+			var self = this;
 			
+			this.$text.change(function() {
+				if (self.dateUpdateTimeout) {
+					clearTimeout(self.dateUpdateTimeout);
+					delete self.dateUpdateTimeout;
+				}
+				self.dateUpdateTimeout = setTimeout(self.updateDateFromText, 1000);
+			});
 			this.$startDate = this.$("input.start-date");
 			this.$endDate = this.$("input.end-date");
-			var self = this;
-			var datepickerOptions = {
-				onSelect: this.onDatepickerSelect
-			}
 			this.$startDate.datepicker({
 				showButtonPanel: true,
 				onSelect: function(value, inst) { self.setStartDate($(this).datepicker("getDate")) }
