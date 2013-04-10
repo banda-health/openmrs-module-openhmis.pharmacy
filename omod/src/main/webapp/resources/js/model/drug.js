@@ -40,7 +40,9 @@ function(openhmis, __) {
 		},
 		
 		validate: function(attrs) {
-			if (!attrs.drug || !attrs.drug.id) return { drug: __("Please choose a drug") };
+			if (!attrs.drug || !attrs.drug.id) return { drug: __("Please choose a drug") }
+			if (!attrs.frequency) return { frequency: __("Please specify how often this drug should be taken.") }
+			
 			return null;
 		}
 	});
