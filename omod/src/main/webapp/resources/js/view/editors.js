@@ -22,6 +22,9 @@ function($, Backbone, _, __) {
 			if (this.schema.options === undefined)
 				this.schema.options = this.suggestDuration;
 			editors.Autocomplete.prototype.initialize.call(this, options);
+			this.text.off("blur");
+			this.text.on("blur", this.triggerBlur);
+			this.text.on("change", this.delayedUpdateFromText);
 			// Cached duration in number of days.  Text is used to check if the
 			// text input is the same as when the value was cached
 			this.days = {
@@ -35,6 +38,14 @@ function($, Backbone, _, __) {
 			"week",
 			"month"
 		],
+		
+		triggerBlur: function() {
+			var self = this;
+			setTimeout(function() {
+				if (self.$("button:focus").length === 0)
+					self.trigger("blur", this);
+			}, 0);			
+		},
 		
 		suggestDuration: function() {
 			var suggestions = [];
@@ -54,12 +65,6 @@ function($, Backbone, _, __) {
 			else
 				var resultCallback = arguments[0];
 			resultCallback(suggestions);
-		},
-		
-		showDatePicker: function(event) {
-			this.$text.datepicker("option", "disabled", false);
-			this.$text.datepicker("option", "onClose", this.onDatepickerClose);
-			this.$text.datepicker("show");
 		},
 		
 		setStartDate: function(date, options) {
@@ -84,18 +89,9 @@ function($, Backbone, _, __) {
 		},
 		
 		getDays: function() {
-			if (this.days.value && this.days.text === this.$text.val())
+			if (this.days.value && this.days.text === this.text.getValue())
 				return this.days.value;
 			return undefined;
-		},
-		
-		determineTextChange: function(event, value) {
-			if (this.dateUpdateTimeout) {
-				clearTimeout(this.dateUpdateTimeout);
-				delete this.dateUpdateTimeout;
-			}
-			this.dateUpdateTimeout = setTimeout(this.updateDateFromText, 100);
-			editors.Autocomplete.prototype.determineTextChange.call(this, event, value);
 		},
 		
 		updateDaysValue: function() {
@@ -103,7 +99,7 @@ function($, Backbone, _, __) {
 			var days = Math.floor(duration / 1000 / 60 / 60 / 24);
 			if (days > 0) {
 				this.days.value = days;
-				this.days.text = this.$text.val();
+				this.days.text = this.text.getValue();
 				this.trigger("change", this);
 			}
 		},
@@ -113,12 +109,12 @@ function($, Backbone, _, __) {
 			var end = this.$endDate.datepicker("getDate");
 			if (start && end) {
 				var length = (end.getTime() - start.getTime()) / 1000;
-				this.$text.val(openhmis.toFuzzyDate(length));
+				this.text.setValue(openhmis.toFuzzyDate(length));
 			}
 		},
 		
 		updateDateFromText: function(event) {
-			var seconds = openhmis.fromFuzzyDate(this.$text.val());
+			var seconds = openhmis.fromFuzzyDate(this.text.getValue());
 			if (seconds === undefined)
 				this.setEndDate(null);
 			else {
@@ -127,12 +123,21 @@ function($, Backbone, _, __) {
 			}
 		},
 		
+		delayedUpdateFromText: function(event) {
+			if (this.dateUpdateTimeout) {
+				clearTimeout(this.dateUpdateTimeout);
+				delete this.dateUpdateTimeout;
+			}
+			this.dateUpdateTimeout = setTimeout(this.updateDateFromText, 100);
+		},
+		
 		render: function() {
 			var template = this.getTemplate();
 			this.$el.html(template());
+			this.$el.prepend(this.text.el);
 			editors.Autocomplete.prototype.render.call(this);
+			this.$("button.edit-start-date, button.edit-end-date").blur(this.triggerBlur);
 			var self = this;
-			
 			this.$startDate = this.$("input.start-date");
 			this.$endDate = this.$("input.end-date");
 			this.$startDate.datepicker({
