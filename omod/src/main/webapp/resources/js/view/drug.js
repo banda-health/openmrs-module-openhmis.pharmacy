@@ -4,13 +4,13 @@ define(
 	openhmis.url.backboneBase + 'js/lib/underscore',
 	openhmis.url.backboneBase + 'js/lib/backbone',
 	openhmis.url.backboneBase + 'js/view/generic',
-	'link!' + openhmis.url.pharmacyBase + 'css/style.css',
 	openhmis.url.backboneBase + 'js/lib/i18n',
+	'link!' + openhmis.url.pharmacyBase + 'css/style.css',
 	openhmis.url.backboneBase + 'js/lib/backbone-forms',
 	openhmis.url.pharmacyBase + 'js/view/editors',
 	openhmis.url.pharmacyBase + 'js/model/drug'
 ],
-function($, _, Backbone, openhmis) {
+function($, _, Backbone, openhmis, __) {
 	openhmis.DrugOrderEntryItemView = openhmis.GenericListItemView.extend({
 		initialize: function(options) {
 			_.bindAll(this, "expandInstructions", "collapseInstructions");
@@ -68,13 +68,16 @@ function($, _, Backbone, openhmis) {
 	});
 	
 	openhmis.DrugOrderEntryView = openhmis.GenericListEntryView.extend({
+		id: "prescriptions",
 		className: "drugOrderEntry",
 		initialize: function(options) {
 			openhmis.GenericListView.prototype.initialize.call(this, options);
 			this.itemView = openhmis.DrugOrderEntryItemView;
+			this.patient = null;
 		},
 		
 		schema: {
+			patient: { type: Object, hidden: true, objRef: true },
 			drug: { type: "Autocomplete", options: new openhmis.GenericCollection([], { model: openhmis.Drug }) },
 			frequency: { type: "Autocomplete", minLength: 1, options: new Backbone.Collection([
 				new openhmis.GenericModel({ display: "1/day", value: 1 }),
@@ -91,6 +94,47 @@ function($, _, Backbone, openhmis) {
 			])},
 			prn: { type: "Checkbox", title: "PRN", hidden: true },
 			duration: { type: "Duration", minLength: 1 },
+		},
+		
+		setPatient: function(patient) {
+			this.patient = patient;
+		},
+		
+		validate: function() {
+			var errors;
+			var orders = this.model.models;
+			for (var o in orders) {
+				if (orders[o].view.commitForm() !== undefined)
+					return false;
+			}
+			try {
+				var newItemView = this.newItem.view;
+				if (newItemView.form.getValue("drug") && newItemView.commitForm() !== undefined)
+					return false;
+			} catch(e) {
+				/* If something fails here it's likely that there's not much
+				 * data in the new item, so don't worry about it */
+			}
+			var errorMap = {};
+			var elMap = {
+				'lineItems': [ $('#prescriptions'), this ],
+				'patient': [ $('#patient-view'),  $('#inputNode') ]
+			}
+			if (!this.patient)
+				errorMap["patient"] = __("Prescriptions must be associated with a patient.");
+			if (this.model.length === 0)
+				errorMap["lineItems"] = __("Please enter a prescription.");
+			for (var e in errorMap) {
+				openhmis.validationMessage(elMap[e][0], errorMap[e], elMap[e][1]);
+				return false;
+			}
+			return true;
+		},
+		
+		save: function(event) {
+			if (!this.validate()) return false;
+			
+			return true;
 		},
 		
 		render: function() {
