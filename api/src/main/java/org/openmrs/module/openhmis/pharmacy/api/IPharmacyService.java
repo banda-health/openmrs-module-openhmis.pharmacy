@@ -13,7 +13,11 @@
  */
 package org.openmrs.module.openhmis.pharmacy.api;
 
+import java.util.Set;
+
+import org.openmrs.DrugOrder;
 import org.openmrs.api.OpenmrsService;
+import org.openmrs.module.openhmis.workorder.api.model.WorkOrder;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -27,10 +31,30 @@ import org.springframework.transaction.annotation.Transactional;
  * @see org.openmrs.api.context.Context
  */
 @Transactional
-public interface OpenHMISPharmacyModuleService extends OpenmrsService {
-     
-	/*
-	 * Add service methods here
+public interface IPharmacyService extends OpenmrsService {
+
+	/**
+	 * Save a DrugOrder, create an inventory transaction if the service is
+	 * available, and save these as attributes in a new WorkOrder
 	 * 
+	 * @param drugOrder a valid DrugOrder
+	 * @param name a name for the work order
+	 * @return saved DrugOrder
 	 */
+	public WorkOrder addDrugOrder(DrugOrder drugOrder, String name);
+
+	public WorkOrder addDrugOrder(DrugOrder drugOrder);
+	
+	/**
+	 * Save a batch of DrugOrders in the same way as {@link addDrugOrder}
+	 * 
+	 * @param drugOrderBatch a set of DrugOrders
+	 * @param name a name for the work order
+	 * @should save DrugOrders
+	 * @should save WorkOrders
+	 * @should save inventory transactions if service is available
+	 */
+	public WorkOrder addDrugOrderBatch(Set<DrugOrder> drugOrderBatch, String name);
+
+	public WorkOrder addDrugOrderBatch(Set<DrugOrder> drugOrderBatch);
 }

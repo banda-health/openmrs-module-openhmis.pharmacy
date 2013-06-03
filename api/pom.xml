@@ -17,10 +17,21 @@
 				
 		<!-- Begin OpenMRS modules -->
 				
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.openmrs.module</groupId> -->
-<!-- 			<artifactId>openhmis.backboneforms-api</artifactId> -->
-<!-- 		</dependency> -->
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>openhmis.workorder-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>openhmis.commons-api</artifactId>
+			<type>jar</type>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>openhmis.inventory-api</artifactId>
+		</dependency>
 				
 		<!-- End OpenMRS modules -->
 		

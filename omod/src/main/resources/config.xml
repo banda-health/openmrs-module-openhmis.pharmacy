@@ -22,12 +22,15 @@
 		<require_module version="1.0-SNAPSHOT">
 			org.openmrs.module.openhmis.backboneforms
 		</require_module>
-			
+		<require_module version="1.0-SNAPSHOT">
+			org.openmrs.module.openhmis.workorder
+		</require_module>
+		
 	</require_modules>
 	<!-- / Required Modules -->
 	
 	<!-- Module Activator -->
-	<activator>${project.parent.groupId}.${project.parent.artifactId}.OpenHMISPharmacyModuleActivator</activator>
+	<activator>${project.parent.groupId}.${project.parent.artifactId}.PharmacyModuleActivator</activator>
 	
 	
 	<!-- Adds link to admin page -->
@@ -43,8 +46,6 @@
 	
 	<!-- Maps hibernate file's, if present -->
 	<mappingFiles>
-				
-		OpenHMISPharmacyModule.hbm.xml
 				
 	</mappingFiles>
 

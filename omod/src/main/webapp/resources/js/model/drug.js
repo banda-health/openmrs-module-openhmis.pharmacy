@@ -39,15 +39,28 @@ function(openhmis, __) {
 			prn: { type: "Checkbox", title: "PRN" },
 			duration: { type: "Text" },
 			quantity: { type: "Number" },
-			instructions: { type: "TextArea"}
+			instructions: { type: "TextArea"},
+			type: { type: "Text", hidden: true }
+		},
+		
+		initialize: function(attrs, options) {
+			openhmis.GenericModel.prototype.initialize.call(this, attrs, options);
+			if (!this.get("type"))
+				this.set("type", "drugorder", { silent: true });
 		},
 		
 		validate: function(attrs) {
 			//if (!attrs.patient || !attrs.patient.id) return { patient: __("A DrugOrder must be associated with a Patient.") };
-			if (!attrs.drug || !attrs.drug.id) return { drug: __("Please choose a drug.") }
+			if (!attrs.drug) return { drug: __("Please choose a drug.") }
 			if (!attrs.frequency) return { frequency: __("Please specify how often this drug should be taken.") }
 			
 			return null;
+		},
+		
+		toJSON: function() {
+			var attrs = openhmis.GenericModel.prototype.toJSON.call(this);
+			delete attrs.duration;
+			return attrs;
 		}
 	});
 });

@@ -3,12 +3,13 @@ curl(
 [
 	openhmis.url.backboneBase + 'js/lib/jquery',
 	openhmis.url.backboneBase + 'js/openhmis',
+	openhmis.url.backboneBase + 'js/lib/i18n',	
 	openhmis.url.backboneBase + 'js/model/patient',
 	openhmis.url.backboneBase + 'js/view/patient',
 	openhmis.url.pharmacyBase + 'js/model/drug',
 	openhmis.url.pharmacyBase + 'js/view/drug'
 ],
-function($, openhmis) {	
+function($, openhmis, __) {	
 	var Screen = function() {
 		this.patientUuid = openhmis.getQueryStringParameter("patientUuid");
 		
@@ -62,7 +63,10 @@ function($, openhmis) {
 			self.drugOrderEntryView.focus();
 		});
 		this.patientView.on('editing', this.drugOrderEntryView.blur);
-		$("#saveOrders").click(this.drugOrderEntryView.save);
+		$("#saveOrders").click(function(event) {
+			if (confirm(__("Are you sure you want to save the prescription(s)?")))
+				self.drugOrderEntryView.save(event);
+		});
 	}
 	
 	$(document).ready(function() {
