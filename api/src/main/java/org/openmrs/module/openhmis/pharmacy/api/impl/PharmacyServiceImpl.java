@@ -13,29 +13,22 @@
  */
 package org.openmrs.module.openhmis.pharmacy.api.impl;
 
-import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.openmrs.DrugOrder;
-import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
-import org.openmrs.module.openhmis.inventory.api.IStockRoomDataService;
-import org.openmrs.module.openhmis.inventory.api.IStockRoomService;
-import org.openmrs.module.openhmis.inventory.api.WellKnownTransactionTypes;
-import org.openmrs.module.openhmis.inventory.api.model.Item;
-import org.openmrs.module.openhmis.inventory.api.model.StockRoom;
-import org.openmrs.module.openhmis.inventory.api.model.StockRoomItem;
-import org.openmrs.module.openhmis.inventory.api.model.StockRoomTransaction;
-import org.openmrs.module.openhmis.inventory.api.search.ItemSearch;
+import org.openmrs.module.ModuleException;
 import org.openmrs.module.openhmis.pharmacy.api.IPharmacyService;
-import org.openmrs.module.openhmis.pharmacy.api.util.ModuleConstants;
 import org.openmrs.module.openhmis.pharmacy.api.util.PharmacyWorkOrder;
+import org.openmrs.module.openhmis.pharmacy.inv.InventoryUtilFactory;
 import org.openmrs.module.openhmis.workorder.api.IWorkOrderDataService;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrder;
-import org.openmrs.module.openhmis.workorder.api.model.WorkOrderAttribute;
 
 public class PharmacyServiceImpl extends BaseOpenmrsService implements IPharmacyService {
+	private static final Logger log = Logger.getLogger(PharmacyServiceImpl.class);
 	@Override
 	public WorkOrder addDrugOrder(DrugOrder drugOrder) {
 		return addDrugOrder(drugOrder, null);
@@ -58,6 +51,7 @@ public class PharmacyServiceImpl extends BaseOpenmrsService implements IPharmacy
 	public WorkOrder addDrugOrderBatch(Set<DrugOrder> drugOrderBatch, String orderName) {
 		IWorkOrderDataService workOrderService = Context.getService(IWorkOrderDataService.class);
 		WorkOrder workOrder = new WorkOrder();
+		workOrder.setWorkOrderType(PharmacyWorkOrder.getWorkOrderType());
 		for (DrugOrder drugOrder : drugOrderBatch) {
 			drugOrder = (DrugOrder) Context.getOrderService().saveOrder(drugOrder);
 			WorkOrder subOrder = createPharmacyWorkOrder(drugOrder, null);
@@ -72,40 +66,17 @@ public class PharmacyServiceImpl extends BaseOpenmrsService implements IPharmacy
 	
 	private WorkOrder createPharmacyWorkOrder(DrugOrder drugOrder, String name) {
 		WorkOrder workOrder = new WorkOrder();
+		workOrder.setWorkOrderType(PharmacyWorkOrder.getWorkOrderType());
 		PharmacyWorkOrder.setDrugOrder(workOrder, drugOrder);
-		if (workOrder.getName() == null || workOrder.getName().isEmpty())
-			workOrder.setName(drugOrder.getDrug().getName());
-		StockRoomTransaction transaction = tryToCreateDrugTransaction(drugOrder);
-		if (transaction != null) {
-			if (transaction.getItems().size() > 1)
-				workOrder.setDescription(Context.getMessageSourceService().getMessage("openhmis.pharmacy.verifyItem"));
-			WorkOrderAttribute txAttribute = PharmacyWorkOrder.setTransaction(workOrder, transaction);
-			workOrder.addAttribute(txAttribute);
+		if (StringUtils.isEmpty(name))
+			workOrder.setName(PharmacyWorkOrder.getName(workOrder));
+		else
+			workOrder.setName(name);
+		try {
+			InventoryUtilFactory.getInstance().createAndSetDrugTransaction(drugOrder, workOrder);
+		} catch (ModuleException e) {
+			log.info(e.getMessage(), e);
 		}
 		return workOrder;
-	}
-	
-	private StockRoomTransaction tryToCreateDrugTransaction(DrugOrder drugOrder) {
-		IStockRoomService txService = Context.getService(IStockRoomService.class);
-		if (txService == null) return null;
-		Integer stockRoomId = ModuleConstants.tryToGetDispensingStockRoomId();
-		if (stockRoomId == null) return null;
-		if (drugOrder.getQuantity() == null)
-			throw new APIException("Cannot create a transaction when drug order quantity is null.");
-		StockRoom dispensary = Context.getService(IStockRoomDataService.class).getById(stockRoomId);
-		if (txService != null) {
-			ItemSearch itemSearch = new ItemSearch(new Item());
-			itemSearch.getTemplate().setDrug(drugOrder.getDrug());
-			List<StockRoomItem> results = Context.getService(IStockRoomDataService.class).findItems(dispensary, itemSearch, null);
-			if (results.size() > 0) {
-				StockRoomTransaction transaction = txService.createTransaction(WellKnownTransactionTypes.getDistribution(), dispensary, null);
-				for (StockRoomItem item : results) {
-					transaction.addItem(item, drugOrder.getQuantity());
-				}
-				txService.submitTransaction(transaction);
-				return transaction;
-			}
-		}
-		return null;
 	}
 }

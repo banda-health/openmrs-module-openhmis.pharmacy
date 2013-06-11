@@ -1,23 +1,40 @@
 package org.openmrs.module.webservices.rest.resource;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.openmrs.DrugOrder;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.openhmis.pharmacy.api.IPharmacyService;
+import org.openmrs.module.openhmis.pharmacy.web.ModuleRestConstants;
 import org.openmrs.module.webservices.rest.web.RequestContext;
+import org.openmrs.module.webservices.rest.web.annotation.PropertySetter;
+import org.openmrs.module.webservices.rest.web.annotation.Resource;
 import org.openmrs.module.webservices.rest.web.representation.Representation;
-import org.openmrs.module.webservices.rest.web.resource.impl.BaseDelegatingResource;
+import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingCrudResource;
 import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceDescription;
 import org.openmrs.module.webservices.rest.web.response.ResourceDoesNotSupportOperationException;
 import org.openmrs.module.webservices.rest.web.response.ResponseException;
 
-public class DrugOrderBatchResource extends BaseDelegatingResource<Set<DrugOrder>> {
+@Resource(name = ModuleRestConstants.ORDER_BATCH_RESOURCE, supportedClass = HashSet.class, supportedOpenmrsVersions = {"1.8.*", "1.9.*"})
+public class DrugOrderBatchResource extends DelegatingCrudResource<Set<DrugOrder>> {
 
 	@Override
 	public Set<DrugOrder> newDelegate() {
 		return new HashSet<DrugOrder>();
+	}
+	
+	@Override
+	public DelegatingResourceDescription getCreatableProperties() {
+		DelegatingResourceDescription description = new DelegatingResourceDescription();
+		description.addProperty("batch");
+		return description;
+	}
+	
+	@PropertySetter("batch")
+	public void setBatch(Set<DrugOrder> instance, HashSet<DrugOrder> batch) {
+		instance.addAll(batch);
 	}
 
 	@Override

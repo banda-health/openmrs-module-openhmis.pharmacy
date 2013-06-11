@@ -13,10 +13,15 @@
  */
 package org.openmrs.module.openhmis.pharmacy;
 
-
 import org.apache.commons.logging.Log; 
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.GlobalProperty;
+import org.openmrs.api.context.Context;
+import org.openmrs.messagesource.MessageSourceService;
 import org.openmrs.module.ModuleActivator;
+import org.openmrs.module.openhmis.pharmacy.api.util.ModuleConstants;
+import org.openmrs.module.openhmis.workorder.api.model.WorkOrderType;
+import org.openmrs.module.openhmis.workorder.api.util.WorkOrderUtil;
 
 /**
  * This class contains the logic that is run every time this module is either started or stopped.
@@ -51,6 +56,7 @@ public class PharmacyModuleActivator implements ModuleActivator {
 	 */
 	public void started() {
 		log.info("OpenHMIS Pharmacy Module Module started");
+		setupWorkOrderType();
 	}
 	
 	/**
@@ -66,5 +72,19 @@ public class PharmacyModuleActivator implements ModuleActivator {
 	public void stopped() {
 		log.info("OpenHMIS Pharmacy Module Module stopped");
 	}
-		
+
+	private void setupWorkOrderType() {
+		MessageSourceService messages = Context.getMessageSourceService();
+		WorkOrderType workOrderType = new WorkOrderType();
+		workOrderType.setName(messages.getMessage("openhmis.pharmacy.workOrderTypeName"));
+		workOrderType.setDescription(messages.getMessage("openhmis.pharmacy.workOrderTypeDescription"));
+		workOrderType.addAttributeType(
+				messages.getMessage("openhmis.pharmacy.drugOrder.name"),
+				"org.openmrs.DrugOrder", null, null, true, 0);
+		workOrderType.addAttributeType(
+				messages.getMessage("openhmis.pharmacy.inventoryTransaction.name"),
+				"org.openmrs.module.openhmis.inventory.api.model.StockRoomTransaction",
+				null, null, false, 1);
+		WorkOrderUtil.ensureWorkOrderType(workOrderType, new GlobalProperty(ModuleConstants.WORKORDER_TYPE_UUID_PROPERTY, null));
+	}
 }

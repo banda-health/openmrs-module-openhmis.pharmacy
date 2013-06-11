@@ -28,7 +28,7 @@ function(openhmis, __) {
 	openhmis.DrugOrder = openhmis.GenericModel.extend({
 		meta: {
 			name: "Drug Order",
-			restUrl: "v1/order"
+			restUrl: "v2/pharmacy/order"
 		},
 		
 		schema: {

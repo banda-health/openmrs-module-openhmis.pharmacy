@@ -8,6 +8,8 @@ public class ModuleConstants {
 	public static final String DISPENSARY_STOCKROOM_ID_PROPERTY = "openhmis.pharmacy.dispensaryStockRoomId";
 	public static final String DISPENSING_ENCOUNTER_ID_PROPERTY = "openhmis.pharmacy.dispensingEncounterId";
 	
+	public static final String WORKORDER_TYPE_UUID_PROPERTY = "openhmis.pharmacy.workOrderTypeUuid";
+	
 	public static Integer tryToGetDispensingStockRoomId() {
 		Integer stockRoomId = null;
 		try {

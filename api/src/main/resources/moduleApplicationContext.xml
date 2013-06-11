@@ -38,5 +38,15 @@
 		<property name="preInterceptors" ref="serviceInterceptors" />
 		<property name="transactionAttributeSource" ref="transactionAttributeSource" />
 	</bean>
+	
+	<bean class="org.openmrs.web.taglib.fieldgen.FieldGenHandlerFactory">
+    	<property name="handlers">
+            <props>
+                <prop key="org.openmrs.AttributableDrugOrder">
+                	org.openmrs.web.taglib.fieldgen.DrugOrderHandler
+				</prop>
+            </props>
+        </property>
+    </bean>
 
 </beans>

@@ -134,39 +134,51 @@ function($, _, Backbone, openhmis, __) {
 		
 		save: function(event) {
 			if (!this.validate()) return false;
-			var progressCollection = new openhmis.ProgressCollection(this.model.models);
-			var progressView = new openhmis.ProgressView({
-				model: progressCollection,
-				message: __("Saving prescriptions...")
-			});
-			$(progressView.render().el).dialog({
-				title: __("Progress"),
-				modal: true,
-				closeOnEscape: false
-			});
-			progressView.on("progress", function(percent) {
-				if (percent == 100) {
-					$(this.el).dialog("close");
-					var failed = progressCollection.failed.length;
-					if (failed > 0) {
-						var orders = failed === 1 ? __("order") : openhmis.pluralize(__("order"));
-						alert(__("%d %s failed to save.", failed, orders));
-					}
-					else {
-						// Success!
-					}
-				}
-			});
 			var self = this;
 			this.model.each(function(drugOrder) {
 				drugOrder.set("patient", self.patient);
 				drugOrder.set("frequency", drugOrder.get("frequency").toString());
-				drugOrder.save([], {
-					url: openhmis.url.rest + "v2/pharmacy/order",
-					success: progressCollection.success,
-					error: progressCollection.error
-				});
 			});
+			var batchModel = new Backbone.Model({ batch: this.model.models });
+			batchModel.urlRoot = this.model.url + "batch";
+			batchModel.save({
+				error: function(model, resp) {
+					alert(__("A problem occurred trying to save the prescriptions."));
+				}
+			});
+			//var progressCollection = new openhmis.ProgressCollection(this.model.models);
+			//var progressView = new openhmis.ProgressView({
+			//	model: progressCollection,
+			//	message: __("Saving prescriptions...")
+			//});
+			//$(progressView.render().el).dialog({
+			//	title: __("Progress"),
+			//	modal: true,
+			//	closeOnEscape: false
+			//});
+			//progressView.on("progress", function(percent) {
+			//	if (percent == 100) {
+			//		$(this.el).dialog("close");
+			//		var failed = progressCollection.failed.length;
+			//		if (failed > 0) {
+			//			var orders = failed === 1 ? __("order") : openhmis.pluralize(__("order"));
+			//			alert(__("%d %s failed to save.", failed, orders));
+			//		}
+			//		else {
+			//			// Success!
+			//		}
+			//	}
+			//});
+			//var self = this;
+			//this.model.each(function(drugOrder) {
+			//	drugOrder.set("patient", self.patient);
+			//	drugOrder.set("frequency", drugOrder.get("frequency").toString());
+			//	drugOrder.save([], {
+			//		url: openhmis.url.rest + "v2/pharmacy/order",
+			//		success: progressCollection.success,
+			//		error: progressCollection.error
+			//	});
+			//});
 			return true;
 		},
 		

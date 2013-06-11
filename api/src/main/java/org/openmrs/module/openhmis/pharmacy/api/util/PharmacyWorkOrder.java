@@ -1,12 +1,16 @@
 package org.openmrs.module.openhmis.pharmacy.api.util;
 
+import org.apache.commons.lang.StringUtils;
+import org.openmrs.AttributableDrugOrder;
 import org.openmrs.DrugOrder;
+import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.openhmis.inventory.api.model.StockRoomTransaction;
 import org.openmrs.module.openhmis.workorder.api.IWorkOrderAttributeTypeDataService;
+import org.openmrs.module.openhmis.workorder.api.IWorkOrderTypeDataService;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrder;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrderAttribute;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrderAttributeType;
+import org.openmrs.module.openhmis.workorder.api.model.WorkOrderType;
 import org.openmrs.module.openhmis.workorder.api.util.WorkOrderUtil;
 
 public class PharmacyWorkOrder {
@@ -25,15 +29,11 @@ public class PharmacyWorkOrder {
 	}
 	
 	public static DrugOrder getDrugOrder(WorkOrder workOrder) {
-		return (DrugOrder) WorkOrderUtil.getAttributeByTypeName(workOrder, DrugOrder.class.getName()).getHydratedValue();
-	}
-	
-	public static StockRoomTransaction getTransaction(WorkOrder workOrder) {
-		return (StockRoomTransaction) WorkOrderUtil.getAttributeByTypeName(workOrder, StockRoomTransaction.class.getName()).getHydratedValue();
+		return (DrugOrder) WorkOrderUtil.getAttributeByTypeName(workOrder, AttributableDrugOrder.class.getName()).getHydratedValue();
 	}
 	
 	public static WorkOrderAttribute setDrugOrder(WorkOrder workOrder, DrugOrder drugOrder) {
-		WorkOrderAttribute attr = WorkOrderUtil.getAttributeByTypeName(workOrder, DrugOrder.class.getName());
+		WorkOrderAttribute attr = WorkOrderUtil.getAttributeByTypeName(workOrder, AttributableDrugOrder.class.getName());
 		WorkOrderAttributeType type;
 		if (attr != null) {
 			workOrder.removeAttribute(attr);
@@ -41,28 +41,21 @@ public class PharmacyWorkOrder {
 		}
 		else
 			type = Context.getService(IWorkOrderAttributeTypeDataService.class)
-					.getByFormatUnique(DrugOrder.class.getName(), workOrder.getWorkOrderType());
+					.getByFormatUnique(AttributableDrugOrder.class.getName(), workOrder.getWorkOrderType());
 		WorkOrderAttribute workOrderAttr = new WorkOrderAttribute();
 		workOrderAttr.setName(drugOrder.getDrug().getName());
 		workOrderAttr.setAttributeType(type);
+		workOrderAttr.setValue(drugOrder.getId().toString());
 		workOrder.addAttribute(workOrderAttr);
 		return workOrderAttr;
 	}
 	
-	public static WorkOrderAttribute setTransaction(WorkOrder workOrder, StockRoomTransaction transaction) {
-		WorkOrderAttribute attr = WorkOrderUtil.getAttributeByTypeName(workOrder, StockRoomTransaction.class.getName());
-		WorkOrderAttributeType type;
-		if (attr != null) {
-			workOrder.removeAttribute(attr);
-			type = attr.getAttributeType();
-		}
-		else
-			type = Context.getService(IWorkOrderAttributeTypeDataService.class)
-					.getByFormatUnique(StockRoomTransaction.class.getName(), workOrder.getWorkOrderType());
-		WorkOrderAttribute workOrderAttr = new WorkOrderAttribute();
-		workOrderAttr.setName(transaction.getDisplayString());
-		workOrderAttr.setAttributeType(type);
-		workOrder.addAttribute(workOrderAttr);
-		return workOrderAttr;
+	public static WorkOrderType getWorkOrderType() {
+		AdministrationService service = Context.getAdministrationService();
+		String uuid = service.getGlobalProperty(ModuleConstants.WORKORDER_TYPE_UUID_PROPERTY);
+		if (StringUtils.isEmpty(uuid))
+			return null;
+		WorkOrderType type = Context.getService(IWorkOrderTypeDataService.class).getByUuid(uuid);
+		return type;
 	}
 }

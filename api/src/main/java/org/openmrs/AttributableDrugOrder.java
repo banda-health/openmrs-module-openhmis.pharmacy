@@ -10,6 +10,10 @@ import org.springframework.beans.BeanUtils;
 @SuppressWarnings("serial")
 public class AttributableDrugOrder extends DrugOrder implements Attributable<DrugOrder> {
 
+	public AttributableDrugOrder() {
+		super();
+	}
+
 	public AttributableDrugOrder(DrugOrder drugOrder) {
 		super();
 		BeanUtils.copyProperties(drugOrder, this);
