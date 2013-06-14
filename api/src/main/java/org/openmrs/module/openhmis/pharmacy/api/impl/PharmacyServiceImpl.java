@@ -24,7 +24,7 @@ import org.openmrs.module.ModuleException;
 import org.openmrs.module.openhmis.pharmacy.api.IPharmacyService;
 import org.openmrs.module.openhmis.pharmacy.api.util.PharmacyWorkOrder;
 import org.openmrs.module.openhmis.pharmacy.inv.InventoryUtilFactory;
-import org.openmrs.module.openhmis.workorder.api.IWorkOrderDataService;
+import org.openmrs.module.openhmis.workorder.api.IWorkOrderService;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrder;
 
 public class PharmacyServiceImpl extends BaseOpenmrsService implements IPharmacyService {
@@ -37,7 +37,7 @@ public class PharmacyServiceImpl extends BaseOpenmrsService implements IPharmacy
 	@SuppressWarnings("deprecation")
 	@Override
 	public WorkOrder addDrugOrder(DrugOrder drugOrder, String name) {
-		IWorkOrderDataService workOrderService = Context.getService(IWorkOrderDataService.class);
+		IWorkOrderService workOrderService = Context.getService(IWorkOrderService.class);
 		drugOrder = (DrugOrder) Context.getOrderService().saveOrder(drugOrder);
 		WorkOrder workOrder = createPharmacyWorkOrder(drugOrder, name);
 		return workOrderService.save(workOrder);
@@ -49,7 +49,7 @@ public class PharmacyServiceImpl extends BaseOpenmrsService implements IPharmacy
 	
 	@SuppressWarnings("deprecation")
 	public WorkOrder addDrugOrderBatch(Set<DrugOrder> drugOrderBatch, String orderName) {
-		IWorkOrderDataService workOrderService = Context.getService(IWorkOrderDataService.class);
+		IWorkOrderService workOrderService = Context.getService(IWorkOrderService.class);
 		WorkOrder workOrder = new WorkOrder();
 		workOrder.setWorkOrderType(PharmacyWorkOrder.getWorkOrderType());
 		for (DrugOrder drugOrder : drugOrderBatch) {

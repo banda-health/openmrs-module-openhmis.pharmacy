@@ -17,7 +17,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.openhmis.inventory.api.IStockRoomTransactionDataService;
 import org.openmrs.module.openhmis.inventory.api.model.StockRoomTransaction;
 import org.openmrs.module.openhmis.pharmacy.api.util.ModuleConstants;
-import org.openmrs.module.openhmis.workorder.api.IWorkOrderDataService;
+import org.openmrs.module.openhmis.workorder.api.IWorkOrderService;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrder;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 
@@ -79,7 +79,7 @@ public class IPharmacyServiceTest extends BaseModuleContextSensitiveTest {
 	 */
 	@Test
 	public void addDrugOrderBatch_shouldSaveWorkOrders() throws Exception {
-		IWorkOrderDataService workOrderService = Context.getService(IWorkOrderDataService.class); 
+		IWorkOrderService workOrderService = Context.getService(IWorkOrderService.class); 
 		Integer originalNumberOfWorkOrders = workOrderService.getAll().size();
 		// Should create a WorkOrder for each DrugOrder, plus 1 to group them
 		WorkOrder workOrder = addBatchOfTwoTestDrugOrders();

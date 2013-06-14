@@ -20,6 +20,9 @@ import org.openmrs.api.context.Context;
 import org.openmrs.messagesource.MessageSourceService;
 import org.openmrs.module.ModuleActivator;
 import org.openmrs.module.openhmis.pharmacy.api.util.ModuleConstants;
+import org.openmrs.module.openhmis.pharmacy.api.util.PharmacyWorkOrder;
+import org.openmrs.module.openhmis.pharmacy.web.PharmacyWebConstants;
+import org.openmrs.module.openhmis.workorder.api.IWorkOrderService;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrderType;
 import org.openmrs.module.openhmis.workorder.api.util.WorkOrderUtil;
 
@@ -57,6 +60,10 @@ public class PharmacyModuleActivator implements ModuleActivator {
 	public void started() {
 		log.info("OpenHMIS Pharmacy Module Module started");
 		setupWorkOrderType();
+		Context.getService(IWorkOrderService.class)	.registerCustomWorkOrderTypeJsModule(
+			PharmacyWorkOrder.getWorkOrderType().getUuid(),
+			PharmacyWebConstants.PHARMACY_WORKORDER_JS_MODULE_PATH
+		);
 	}
 	
 	/**
