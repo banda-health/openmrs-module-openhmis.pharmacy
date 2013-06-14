@@ -25,10 +25,5 @@
 		-->
 
 		<mapping resource="WorkOrder.hbm.xml" />
-		
-		<mapping resource="StockRoom.hbm.xml" />
-		<mapping resource="Item.hbm.xml" />
-		<mapping resource="Department.hbm.xml" />
-		<mapping resource="Category.hbm.xml" />
 	</session-factory>
 </hibernate-configuration>

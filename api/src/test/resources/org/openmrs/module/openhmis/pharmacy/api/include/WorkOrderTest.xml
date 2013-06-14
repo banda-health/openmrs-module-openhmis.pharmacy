@@ -1,12 +1,15 @@
 <dataset>
-	<workorder_workorder workorder_id="0" name="Test order" description="test description" status="NEW" creator="1" date_created="2012-01-01 00:00:00.0" retired="false" uuid="4028814B399565AA013995675A7E0001" />
+	<workorder_workorder workorder_id="0" name="Test order" description="test description" status="NEW" item_order="0" creator="1" date_created="2012-01-01 00:00:00.0" retired="false" uuid="4028814B399565AA013995675A7E0001" />
+
+	<workorder_workorder_type workorder_type_id="0" name="Pharmacy" description="test drug order type"
+		 creator="1" date_created="2012-01-01 00:00:00.0" retired="false" uuid="f5670b8e-a37c-4b33-b69b-f627a37ab528" />
 	
 	<workorder_workorder_attribute_type workorder_attribute_type_id="0" name="Drug Order" description="Drug order attribute"
-		datatype="org.openmrs.AttributableDrugOrder" min_occurs="0" max_occurs="1" creator="1" date_created="2012-01-01 00:00:00.0" retired="false" uuid="f5670b8e-a37c-4b33-b69b-f627a37ab528" />
+		workorder_type_id="0" format="org.openmrs.AttributableDrugOrder" required="true" attribute_order="0" creator="1" date_created="2012-01-01 00:00:00.0" retired="false" uuid="f5670b8e-a37c-4b33-b69b-f627a37ab528" />
 
 	<workorder_workorder_attribute_type workorder_attribute_type_id="1" name="Transaction" description="Inventory transaction"
-		datatype="org.openmrs.module.openhmis.inventory.api.model.StockRoomTransaction" min_occurs="0" max_occurs="1" creator="1" date_created="2012-01-01 00:00:00.0" retired="false" uuid="6e65a169-fdfa-4876-b4c0-4a9e26f581b4" />
+		workorder_type_id="0" format="org.openmrs.module.openhmis.inventory.api.model.StockRoomTransaction" required="false" attribute_order="0" creator="1" date_created="2012-01-01 00:00:00.0" retired="false" uuid="6e65a169-fdfa-4876-b4c0-4a9e26f581b4" />
 	
-	<workorder_workorder_attribute workorder_attribute_id="0" workorder_id="0" workorder_attribute_type_id="0"
-	value_reference="0" creator="1" date_created="2012-01-01 00:00:00.0" voided="false" uuid="4028814B399565AA013995675A7E0001"/>
+	<workorder_workorder_attribute workorder_attribute_id="0" workorder_id="0" value="0"
+	creator="1" date_created="2012-01-01 00:00:00.0" retired="false" uuid="4028814B399565AA013995675A7E0001"/>
 </dataset>
