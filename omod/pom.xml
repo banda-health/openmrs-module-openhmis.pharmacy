@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openmrs.module</groupId>
 		<artifactId>openhmis.pharmacy</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>openhmis.pharmacy-omod</artifactId>
@@ -26,8 +26,6 @@
 		<dependency>
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>openhmis.commons-api</artifactId>
-			<version>1.5.0-SNAPSHOT</version>
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -43,9 +41,7 @@
 		<dependency>
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>webservices.rest-omod</artifactId>
-			<version>2.0</version>
-			<scope>provided</scope>
-		</dependency>				
+		</dependency>
 
 						
 		<!-- End OpenMRS modules -->

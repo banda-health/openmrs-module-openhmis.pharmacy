@@ -4,7 +4,7 @@
 
 	<groupId>org.openmrs.module</groupId>
 	<artifactId>openhmis.pharmacy</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>OpenHMIS Pharmacy Module Module</name>
 	<description>Facilitate prescription entry and pharmacy management</description>
@@ -45,14 +45,14 @@
 			<dependency>
 				<groupId>org.openmrs.module</groupId>
 				<artifactId>openhmis.backboneforms-api</artifactId>
-				<version>1.0-SNAPSHOT</version>
+				<version>2.0.0-SNAPSHOT</version>
 				<scope>provided</scope>
 			</dependency>
 
 			<dependency>
 				<groupId>org.openmrs.module</groupId>
 				<artifactId>openhmis.workorder-api</artifactId>
-				<version>1.0-SNAPSHOT</version>
+				<version>1.0.0-SNAPSHOT</version>
 				<scope>provided</scope>
 			</dependency>
 			
@@ -67,11 +67,18 @@
 			<dependency>
 				<groupId>org.openmrs.module</groupId>
 				<artifactId>openhmis.inventory-api</artifactId>
-				<version>1.0-SNAPSHOT</version>
+				<version>1.0.0-SNAPSHOT</version>
 				<type>jar</type>
 				<scope>provided</scope>
 			</dependency>
-						
+
+			<dependency>
+				<groupId>org.openmrs.module</groupId>
+				<artifactId>webservices.rest-omod</artifactId>
+				<version>2.0</version>
+				<scope>provided</scope>
+			</dependency>
+
 			<!-- End OpenMRS modules -->
 			
 
