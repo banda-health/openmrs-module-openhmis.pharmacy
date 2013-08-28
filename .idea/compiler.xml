@@ -24,6 +24,10 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
+        <module name="openhmis.backboneforms-api" />
+        <module name="openhmis.backboneforms-omod" />
+        <module name="openhmis.commons-api" />
+        <module name="openhmis.commons-omod" />
         <module name="openhmis.pharmacy-api" />
         <module name="openhmis.pharmacy-omod" />
         <module name="openhmis.workorder-api" />
@@ -31,6 +35,12 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="openhmis.backboneforms" target="1.6" />
+      <module name="openhmis.backboneforms-api" target="1.6" />
+      <module name="openhmis.backboneforms-omod" target="1.6" />
+      <module name="openhmis.commons" target="1.6" />
+      <module name="openhmis.commons-api" target="1.6" />
+      <module name="openhmis.commons-omod" target="1.6" />
       <module name="openhmis.pharmacy" target="1.6" />
       <module name="openhmis.pharmacy-api" target="1.6" />
       <module name="openhmis.pharmacy-omod" target="1.6" />
