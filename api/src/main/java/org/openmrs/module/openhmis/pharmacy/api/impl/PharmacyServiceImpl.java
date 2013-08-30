@@ -13,12 +13,10 @@
  */
 package org.openmrs.module.openhmis.pharmacy.api.impl;
 
-import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.openmrs.DrugOrder;
-import org.openmrs.api.context.Context;
+import org.openmrs.api.OrderService;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.ModuleException;
 import org.openmrs.module.openhmis.pharmacy.api.IPharmacyService;
@@ -26,21 +24,38 @@ import org.openmrs.module.openhmis.pharmacy.api.util.PharmacyWorkOrder;
 import org.openmrs.module.openhmis.pharmacy.inv.InventoryUtilFactory;
 import org.openmrs.module.openhmis.workorder.api.IWorkOrderService;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrder;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Set;
+
+@SuppressWarnings("deprecation")
 public class PharmacyServiceImpl extends BaseOpenmrsService implements IPharmacyService {
 	private static final Logger log = Logger.getLogger(PharmacyServiceImpl.class);
+
+	private OrderService orderService;
+	private IWorkOrderService workOrderService;
+
+	@Autowired
+	public PharmacyServiceImpl(OrderService orderService, IWorkOrderService workOrderService)  {
+		this.orderService = orderService;
+		this.workOrderService = workOrderService;
+	}
+
 	@Override
 	public WorkOrder addDrugOrder(DrugOrder drugOrder) {
 		return addDrugOrder(drugOrder, null);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public WorkOrder addDrugOrder(DrugOrder drugOrder, String name) {
-		IWorkOrderService workOrderService = Context.getService(IWorkOrderService.class);
-		drugOrder = (DrugOrder) Context.getOrderService().saveOrder(drugOrder);
+		// Save the drug order
+		drugOrder = (DrugOrder)orderService.saveOrder(drugOrder);
+
+		// Create a new work order from the drug order
 		WorkOrder workOrder = createPharmacyWorkOrder(drugOrder, name);
-		return workOrderService.save(workOrder);
+		workOrder = workOrderService.save(workOrder);
+
+		return workOrder;
 	}
 	
 	public WorkOrder addDrugOrderBatch(Set<DrugOrder> drugOrderBatch) {
@@ -49,34 +64,51 @@ public class PharmacyServiceImpl extends BaseOpenmrsService implements IPharmacy
 	
 	@SuppressWarnings("deprecation")
 	public WorkOrder addDrugOrderBatch(Set<DrugOrder> drugOrderBatch, String orderName) {
-		IWorkOrderService workOrderService = Context.getService(IWorkOrderService.class);
 		WorkOrder workOrder = new WorkOrder();
 		workOrder.setWorkOrderType(PharmacyWorkOrder.getWorkOrderType());
-		for (DrugOrder drugOrder : drugOrderBatch) {
-			drugOrder = (DrugOrder) Context.getOrderService().saveOrder(drugOrder);
-			WorkOrder subOrder = createPharmacyWorkOrder(drugOrder, null);
-			workOrder.addWorkOrder(subOrder);
+
+		try {
+			for (DrugOrder drugOrder : drugOrderBatch) {
+				drugOrder = (DrugOrder) orderService.saveOrder(drugOrder);
+
+				WorkOrder subOrder = createPharmacyWorkOrder(drugOrder, null);
+				workOrder.addWorkOrder(subOrder);
+			}
+
+			if (orderName != null) {
+				workOrder.setName(orderName);
+			} else {
+				workOrder.setName(PharmacyWorkOrder.getName(workOrder));
+			}
+
+			workOrder = workOrderService.save(workOrder);
+		} catch (Exception ex) {
+			log.error("Someth'n done broke", ex);
+
+			workOrder = null;
 		}
-		if (orderName != null)
-			workOrder.setName(orderName);
-		else
-			workOrder.setName(PharmacyWorkOrder.getName(workOrder));
-		return workOrderService.save(workOrder);
+
+		return workOrder;
 	}
 	
 	private WorkOrder createPharmacyWorkOrder(DrugOrder drugOrder, String name) {
 		WorkOrder workOrder = new WorkOrder();
 		workOrder.setWorkOrderType(PharmacyWorkOrder.getWorkOrderType());
+
 		PharmacyWorkOrder.setDrugOrder(workOrder, drugOrder);
-		if (StringUtils.isEmpty(name))
+
+		if (StringUtils.isEmpty(name)) {
 			workOrder.setName(PharmacyWorkOrder.getName(workOrder));
-		else
+		} else {
 			workOrder.setName(name);
+		}
+
 		try {
 			InventoryUtilFactory.getInstance().createAndSetDrugTransaction(drugOrder, workOrder);
 		} catch (ModuleException e) {
 			log.info(e.getMessage(), e);
 		}
+
 		return workOrder;
 	}
 }
