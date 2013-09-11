@@ -18,26 +18,39 @@ import org.openmrs.AttributableDrugOrder;
 import org.openmrs.DrugOrder;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.openhmis.workorder.api.IWorkOrderAttributeTypeDataService;
 import org.openmrs.module.openhmis.workorder.api.IWorkOrderTypeDataService;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrder;
-import org.openmrs.module.openhmis.workorder.api.model.WorkOrderAttribute;
-import org.openmrs.module.openhmis.workorder.api.model.WorkOrderAttributeType;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrderType;
 import org.openmrs.module.openhmis.workorder.api.util.WorkOrderUtil;
 
-public class PharmacyWorkOrder {
-	private PharmacyWorkOrder() {}
+public class PharmacyWorkOrderHelper {
+	private PharmacyWorkOrderHelper() {}
 
-	public static String getName(WorkOrder workOrder) {
+	/**
+	 * Generates a work order name.
+	 * @param workOrder The work order to create the name for.
+	 * @return The work order name.
+	 */
+	public static String generateName(WorkOrder workOrder) {
+		/*
+		If the work order already has a name, just return it.  Otherwise, create a new name:
+			If part of a batch then use the first order in the batch as the name
+			If part of a drug order, use the drug name as the name
+		 */
+
 		String name = workOrder.getName();
+
 		if (name == null || name.isEmpty()) {
-			if (workOrder.getWorkOrders() != null && !workOrder.getWorkOrders().isEmpty())
-				return "Batch with " + workOrder.getWorkOrders().get(0).getName();
-			DrugOrder drugOrder = getDrugOrder(workOrder);
-			if (drugOrder != null && drugOrder.getDrug() != null)
-				return drugOrder.getDrug().getName();
+			if (workOrder.getWorkOrders() != null && !workOrder.getWorkOrders().isEmpty()) {
+				name = "Batch with " + workOrder.getWorkOrders().get(0).getName();
+			} else {
+				DrugOrder drugOrder = getDrugOrder(workOrder);
+				if (drugOrder != null && drugOrder.getDrug() != null) {
+					name = drugOrder.getDrug().getName();
+				}
+			}
 		}
+
 		return name;
 	}
 	
@@ -45,30 +58,13 @@ public class PharmacyWorkOrder {
 		return (DrugOrder) WorkOrderUtil.getAttributeByTypeName(workOrder, AttributableDrugOrder.class.getName()).getHydratedValue();
 	}
 	
-	public static WorkOrderAttribute setDrugOrder(WorkOrder workOrder, DrugOrder drugOrder) {
-		WorkOrderAttribute attr = WorkOrderUtil.getAttributeByTypeName(workOrder, AttributableDrugOrder.class.getName());
-		WorkOrderAttributeType type;
-		if (attr != null) {
-			workOrder.removeAttribute(attr);
-			type = attr.getAttributeType();
-		}
-		else
-			type = Context.getService(IWorkOrderAttributeTypeDataService.class)
-					.getByFormatUnique(AttributableDrugOrder.class.getName(), workOrder.getWorkOrderType());
-		WorkOrderAttribute workOrderAttr = new WorkOrderAttribute();
-		workOrderAttr.setName(drugOrder.getDrug().getName());
-		workOrderAttr.setAttributeType(type);
-		workOrderAttr.setValue(drugOrder.getId().toString());
-		workOrder.addAttribute(workOrderAttr);
-		return workOrderAttr;
-	}
-	
 	public static WorkOrderType getWorkOrderType() {
 		AdministrationService service = Context.getAdministrationService();
 		String uuid = service.getGlobalProperty(ModuleConstants.WORKORDER_TYPE_UUID_PROPERTY);
-		if (StringUtils.isEmpty(uuid))
+		if (StringUtils.isEmpty(uuid)) {
 			return null;
-		WorkOrderType type = Context.getService(IWorkOrderTypeDataService.class).getByUuid(uuid);
-		return type;
+		}
+
+		return Context.getService(IWorkOrderTypeDataService.class).getByUuid(uuid);
 	}
 }
