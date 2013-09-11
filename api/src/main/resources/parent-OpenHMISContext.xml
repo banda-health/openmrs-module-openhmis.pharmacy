@@ -4,7 +4,28 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
   		    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
+	<!-- Commons Repository Bean -->
 	<bean id="genericRepository" class="org.openmrs.module.openhmis.commons.api.entity.db.hibernate.HibernateRepository">
 		<constructor-arg name="sessionFactory" ref="sessionFactory" />
+	</bean>
+
+	<!-- Work Order Service Bean -->
+	<bean parent="serviceContext">
+		<property name="moduleService">
+			<list merge="true">
+				<value>org.openmrs.module.openhmis.workorder.api.IWorkOrderService</value>
+				<ref bean="workOrderService" />
+			</list>
+		</property>
+	</bean>
+	<bean id="workOrderService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="target">
+			<bean class="org.openmrs.module.openhmis.workorder.api.impl.WorkOrderServiceImpl">
+				<property name="repository" ref="genericRepository" />
+			</bean>
+		</property>
+		<property name="preInterceptors" ref="serviceInterceptors" />
+		<property name="transactionAttributeSource" ref="transactionAttributeSource" />
 	</bean>
 </beans>

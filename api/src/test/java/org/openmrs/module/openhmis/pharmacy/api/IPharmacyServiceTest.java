@@ -1,9 +1,5 @@
 package org.openmrs.module.openhmis.pharmacy.api;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,19 +8,27 @@ import org.openmrs.DrugOrder;
 import org.openmrs.OrderType;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.openhmis.workorder.api.IWorkOrderService;
+import org.openmrs.module.openhmis.workorder.api.IWorkOrderDataService;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrder;
 import org.openmrs.test.BaseModuleContextSensitiveTest;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class IPharmacyServiceTest extends BaseModuleContextSensitiveTest {
 	private static final String WORKORDER_DATASET = TestConstants.BASE_DATASET_DIR + "WorkOrderTest.xml";
-	IPharmacyService service;
-	
+
+	private IPharmacyService service;
+	private IWorkOrderDataService workOrderService;
+
 	@Before
 	public void before() throws Exception {
 		executeDataSet(TestConstants.CORE_DATASET);
 		executeDataSet(WORKORDER_DATASET);
+
 		service = Context.getService(IPharmacyService.class);
+		workOrderService = Context.getService(IWorkOrderDataService.class);
 	}
 	
 	private WorkOrder addBatchOfTwoTestDrugOrders() throws Exception {
@@ -63,7 +67,6 @@ public class IPharmacyServiceTest extends BaseModuleContextSensitiveTest {
 	 */
 	@Test
 	public void addDrugOrderBatch_shouldSaveWorkOrders() throws Exception {
-		IWorkOrderService workOrderService = Context.getService(IWorkOrderService.class); 
 		Integer originalNumberOfWorkOrders = workOrderService.getAll().size();
 		// getAll will only return the single, top-level grouping work order
 		WorkOrder workOrder = addBatchOfTwoTestDrugOrders();

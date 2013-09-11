@@ -13,15 +13,11 @@
  */
 package org.openmrs.module.openhmis.pharmacy.inv;
 
-import java.util.List;
-
 import org.openmrs.DrugOrder;
 import org.openmrs.api.APIException;
-import org.openmrs.api.context.Context;
 import org.openmrs.module.openhmis.inventory.api.IStockRoomDataService;
 import org.openmrs.module.openhmis.inventory.api.IStockRoomService;
 import org.openmrs.module.openhmis.inventory.api.WellKnownTransactionTypes;
-import org.openmrs.module.openhmis.inventory.api.model.Item;
 import org.openmrs.module.openhmis.inventory.api.model.StockRoom;
 import org.openmrs.module.openhmis.inventory.api.model.StockRoomItem;
 import org.openmrs.module.openhmis.inventory.api.model.StockRoomTransaction;
@@ -31,29 +27,46 @@ import org.openmrs.module.openhmis.workorder.api.IWorkOrderAttributeTypeDataServ
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrder;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrderAttribute;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrderAttributeType;
-import org.openmrs.module.openhmis.workorder.api.util.WorkOrderUtil;
+import org.openmrs.module.openhmis.workorder.api.util.WorkOrderHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 public class InventoryUtil implements IInventoryUtil {
+	private IWorkOrderAttributeTypeDataService workDataService;
+	private IStockRoomService stockRoomService;
+	private IStockRoomDataService stockRoomDataService;
+
+	@Autowired
+	public InventoryUtil(IWorkOrderAttributeTypeDataService workDataService,
+	                     IStockRoomService stockRoomService,
+	                     IStockRoomDataService stockRoomDataService) {
+		this.workDataService = workDataService;
+		this.stockRoomService = stockRoomService;
+		this.stockRoomDataService = stockRoomDataService;
+	}
+
 	@Override
 	public StockRoomTransaction getTransaction(WorkOrder workOrder) {
-		return (StockRoomTransaction) WorkOrderUtil.getAttributeByTypeName(workOrder, StockRoomTransaction.class.getName()).getHydratedValue();
+		return WorkOrderHelper.getAttributeTypeValue(workOrder, StockRoomTransaction.class);
 	}
 	
 	@Override
 	public WorkOrderAttribute setTransaction(WorkOrder workOrder, StockRoomTransaction transaction) {
-		WorkOrderAttribute attr = WorkOrderUtil.getAttributeByTypeName(workOrder, StockRoomTransaction.class.getName());
+		WorkOrderAttribute attr = WorkOrderHelper.getAttributeByType(workOrder, StockRoomTransaction.class);
 		WorkOrderAttributeType type;
 		if (attr != null) {
 			workOrder.removeAttribute(attr);
 			type = attr.getAttributeType();
+		} else {
+			type = workDataService.getByClass(workOrder.getWorkOrderType(), StockRoomTransaction.class);
 		}
-		else
-			type = Context.getService(IWorkOrderAttributeTypeDataService.class)
-					.getByFormatUnique(StockRoomTransaction.class.getName(), workOrder.getWorkOrderType());
+
 		WorkOrderAttribute workOrderAttr = new WorkOrderAttribute();
 		workOrderAttr.setName(transaction.getDisplayString());
 		workOrderAttr.setAttributeType(type);
 		workOrder.addAttribute(workOrderAttr);
+
 		return workOrderAttr;
 	}
 	
@@ -63,25 +76,33 @@ public class InventoryUtil implements IInventoryUtil {
 	}
 	
 	private StockRoomTransaction createDrugTransaction(DrugOrder drugOrder) {
-		IStockRoomService txService = Context.getService(IStockRoomService.class);
-		Integer stockRoomId = ModuleConstants.tryToGetDispensingStockRoomId();
-		if (stockRoomId == null) return null;
-		if (drugOrder.getQuantity() == null)
+		if (drugOrder.getQuantity() == null) {
 			throw new APIException("Cannot create a transaction when drug order quantity is null.");
-		StockRoom dispensary = Context.getService(IStockRoomDataService.class).getById(stockRoomId);
-		if (txService != null) {
-			ItemSearch itemSearch = new ItemSearch(new Item());
+		}
+
+		Integer stockRoomId = ModuleConstants.tryToGetDispensingStockRoomId();
+		if (stockRoomId == null) {
+			return null;
+		}
+
+		StockRoomTransaction transaction = null;
+		StockRoom dispensary = stockRoomDataService.getById(stockRoomId);
+		if (stockRoomService != null) {
+			ItemSearch itemSearch = new ItemSearch();
 			itemSearch.getTemplate().setDrug(drugOrder.getDrug());
-			List<StockRoomItem> results = Context.getService(IStockRoomDataService.class).findItems(dispensary, itemSearch, null);
+
+			List<StockRoomItem> results = stockRoomDataService.findItems(dispensary, itemSearch, null);
 			if (results.size() > 0) {
-				StockRoomTransaction transaction = txService.createTransaction(WellKnownTransactionTypes.getDistribution(), dispensary, null);
+				transaction = stockRoomService.createTransaction(WellKnownTransactionTypes.getDistribution(), dispensary, null);
+
 				for (StockRoomItem item : results) {
 					transaction.addItem(item, drugOrder.getQuantity());
 				}
-				txService.submitTransaction(transaction);
-				return transaction;
+
+				stockRoomService.submitTransaction(transaction);
 			}
 		}
-		return null;
+
+		return transaction;
 	}
 }

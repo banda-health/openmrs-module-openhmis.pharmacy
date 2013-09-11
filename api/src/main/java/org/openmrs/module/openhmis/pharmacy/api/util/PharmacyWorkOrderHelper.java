@@ -14,16 +14,22 @@
 package org.openmrs.module.openhmis.pharmacy.api.util;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.openmrs.AttributableDrugOrder;
 import org.openmrs.DrugOrder;
+import org.openmrs.api.APIException;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.openhmis.workorder.api.IWorkOrderTypeDataService;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrder;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrderType;
-import org.openmrs.module.openhmis.workorder.api.util.WorkOrderUtil;
+import org.openmrs.module.openhmis.workorder.api.util.WorkOrderHelper;
 
 public class PharmacyWorkOrderHelper {
+	private static final Logger log = Logger.getLogger(PharmacyWorkOrderHelper.class);
+
+	private static WorkOrderType pharmacyWorkOrderType = null;
+
 	private PharmacyWorkOrderHelper() {}
 
 	/**
@@ -53,18 +59,33 @@ public class PharmacyWorkOrderHelper {
 
 		return name;
 	}
-	
+
+	/**
+	 * Gets the {@link DrugOrder} attribute from the specified {@link WorkOrder}.
+	 * @param workOrder The {@link WorkOrder}.
+	 * @return The {@link DrugOrder} or {@code null} if the {@link WorkOrder} does not have a drug order attribute.
+	 */
 	public static DrugOrder getDrugOrder(WorkOrder workOrder) {
-		return (DrugOrder) WorkOrderUtil.getAttributeByTypeName(workOrder, AttributableDrugOrder.class.getName()).getHydratedValue();
+		return WorkOrderHelper.getAttributeTypeValue(workOrder, AttributableDrugOrder.class);
 	}
-	
+
+	/**
+	 * Gets the pharmacy work order type.
+	 * @return The pharmacy work order type.
+	 */
 	public static WorkOrderType getWorkOrderType() {
-		AdministrationService service = Context.getAdministrationService();
-		String uuid = service.getGlobalProperty(ModuleConstants.WORKORDER_TYPE_UUID_PROPERTY);
-		if (StringUtils.isEmpty(uuid)) {
-			return null;
+		if (pharmacyWorkOrderType == null) {
+			AdministrationService service = Context.getAdministrationService();
+			String uuid = service.getGlobalProperty(ModuleConstants.WORKORDER_TYPE_UUID_PROPERTY);
+			if (StringUtils.isEmpty(uuid)) {
+				log.warn("Could not find the pharmacy work order type (UUID='" + uuid + "')");
+
+				throw new APIException("Could not load pharmacy work order type.");
+			}
+
+			pharmacyWorkOrderType = Context.getService(IWorkOrderTypeDataService.class).getByUuid(uuid);
 		}
 
-		return Context.getService(IWorkOrderTypeDataService.class).getByUuid(uuid);
+		return pharmacyWorkOrderType;
 	}
 }

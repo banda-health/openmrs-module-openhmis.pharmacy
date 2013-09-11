@@ -15,15 +15,20 @@ package org.openmrs.module.openhmis.pharmacy.api.impl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.openmrs.AttributableDrugOrder;
 import org.openmrs.DrugOrder;
 import org.openmrs.api.OrderService;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.ModuleException;
 import org.openmrs.module.openhmis.pharmacy.api.IPharmacyService;
-import org.openmrs.module.openhmis.pharmacy.api.util.PharmacyWorkOrder;
+import org.openmrs.module.openhmis.pharmacy.api.util.PharmacyWorkOrderHelper;
 import org.openmrs.module.openhmis.pharmacy.inv.InventoryUtilFactory;
-import org.openmrs.module.openhmis.workorder.api.IWorkOrderService;
+import org.openmrs.module.openhmis.workorder.api.IWorkOrderAttributeTypeDataService;
+import org.openmrs.module.openhmis.workorder.api.IWorkOrderDataService;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrder;
+import org.openmrs.module.openhmis.workorder.api.model.WorkOrderAttribute;
+import org.openmrs.module.openhmis.workorder.api.model.WorkOrderAttributeType;
+import org.openmrs.module.openhmis.workorder.api.util.WorkOrderHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Set;
@@ -33,12 +38,16 @@ public class PharmacyServiceImpl extends BaseOpenmrsService implements IPharmacy
 	private static final Logger log = Logger.getLogger(PharmacyServiceImpl.class);
 
 	private OrderService orderService;
-	private IWorkOrderService workOrderService;
+	private IWorkOrderDataService workOrderService;
+	private IWorkOrderAttributeTypeDataService attributeTypeDataService;
 
 	@Autowired
-	public PharmacyServiceImpl(OrderService orderService, IWorkOrderService workOrderService)  {
+	public PharmacyServiceImpl(OrderService orderService,
+	                           IWorkOrderDataService workOrderService,
+	                           IWorkOrderAttributeTypeDataService attributeTypeDataService)  {
 		this.orderService = orderService;
 		this.workOrderService = workOrderService;
+		this.attributeTypeDataService = attributeTypeDataService;
 	}
 
 	@Override
@@ -65,7 +74,7 @@ public class PharmacyServiceImpl extends BaseOpenmrsService implements IPharmacy
 	@SuppressWarnings("deprecation")
 	public WorkOrder addDrugOrderBatch(Set<DrugOrder> drugOrderBatch, String orderName) {
 		WorkOrder workOrder = new WorkOrder();
-		workOrder.setWorkOrderType(PharmacyWorkOrder.getWorkOrderType());
+		workOrder.setWorkOrderType(PharmacyWorkOrderHelper.getWorkOrderType());
 
 		try {
 			for (DrugOrder drugOrder : drugOrderBatch) {
@@ -75,10 +84,10 @@ public class PharmacyServiceImpl extends BaseOpenmrsService implements IPharmacy
 				workOrder.addWorkOrder(subOrder);
 			}
 
-			if (orderName != null) {
-				workOrder.setName(orderName);
+			if (StringUtils.isEmpty(orderName)) {
+				workOrder.setName(PharmacyWorkOrderHelper.generateName(workOrder));
 			} else {
-				workOrder.setName(PharmacyWorkOrder.getName(workOrder));
+				workOrder.setName(orderName);
 			}
 
 			workOrder = workOrderService.save(workOrder);
@@ -93,12 +102,12 @@ public class PharmacyServiceImpl extends BaseOpenmrsService implements IPharmacy
 	
 	private WorkOrder createPharmacyWorkOrder(DrugOrder drugOrder, String name) {
 		WorkOrder workOrder = new WorkOrder();
-		workOrder.setWorkOrderType(PharmacyWorkOrder.getWorkOrderType());
+		workOrder.setWorkOrderType(PharmacyWorkOrderHelper.getWorkOrderType());
 
-		PharmacyWorkOrder.setDrugOrder(workOrder, drugOrder);
+		setDrugOrder(workOrder, drugOrder);
 
 		if (StringUtils.isEmpty(name)) {
-			workOrder.setName(PharmacyWorkOrder.getName(workOrder));
+			workOrder.setName(PharmacyWorkOrderHelper.generateName(workOrder));
 		} else {
 			workOrder.setName(name);
 		}
@@ -106,9 +115,28 @@ public class PharmacyServiceImpl extends BaseOpenmrsService implements IPharmacy
 		try {
 			InventoryUtilFactory.getInstance().createAndSetDrugTransaction(drugOrder, workOrder);
 		} catch (ModuleException e) {
-			log.info(e.getMessage(), e);
+			log.warn(e.getMessage(), e);
 		}
 
 		return workOrder;
+	}
+
+	private void setDrugOrder(WorkOrder workOrder, DrugOrder drugOrder) {
+		WorkOrderAttributeType type;
+
+		WorkOrderAttribute attr = WorkOrderHelper.getAttributeByType(workOrder, AttributableDrugOrder.class);
+		if (attr != null) {
+			workOrder.removeAttribute(attr);
+			type = attr.getAttributeType();
+		} else {
+			type = attributeTypeDataService.getByClass(workOrder.getWorkOrderType(), AttributableDrugOrder.class);
+		}
+
+		WorkOrderAttribute workOrderAttr = new WorkOrderAttribute();
+		workOrderAttr.setName(drugOrder.getDrug().getName());
+		workOrderAttr.setAttributeType(type);
+		workOrderAttr.setValue(drugOrder.getId().toString());
+
+		workOrder.addAttribute(workOrderAttr);
 	}
 }

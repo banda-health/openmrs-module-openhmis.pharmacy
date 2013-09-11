@@ -13,48 +13,49 @@
  */
 package org.openmrs.module.openhmis.pharmacy.api;
 
-import java.util.Set;
-
 import org.openmrs.DrugOrder;
 import org.openmrs.api.OpenmrsService;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrder;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * This service exposes module's core functionality. It is a Spring managed bean which is configured in moduleApplicationContext.xml.
- * <p>
- * It can be accessed only via Context:<br>
- * <code>
- * Context.getService(OpenHMISPharmacyModuleService.class).someMethod();
- * </code>
- * 
- * @see org.openmrs.api.context.Context
- */
+import java.util.Set;
+
 @Transactional
 public interface IPharmacyService extends OpenmrsService {
 
 	/**
-	 * Save a DrugOrder, create an inventory transaction if the service is
-	 * available, and save these as attributes in a new WorkOrder
+	 * Saves a DrugOrder using the specified {@link WorkOrder} name. This will create an inventory transaction if the
+	 * service is available, and save these as attributes in a new {@link WorkOrder}.
 	 * 
 	 * @param drugOrder a valid DrugOrder
-	 * @param name a name for the work order
-	 * @return saved DrugOrder
+	 * @param name The name for the work order
+	 * @return The pharmacy work order that was created to service the drug order.
 	 */
 	public WorkOrder addDrugOrder(DrugOrder drugOrder, String name);
 
+	/**
+	 * Saves a {@link DrugOrder}.
+	 * @param drugOrder The {@link DrugOrder} to save.
+	 * @return The pharmacy work order that was created to service the drug order.
+	 */
 	public WorkOrder addDrugOrder(DrugOrder drugOrder);
 	
 	/**
-	 * Save a batch of DrugOrders in the same way as {@link addDrugOrder}
+	 * Saves a batch of DrugOrders using the specified {@link WorkOrder} name.
 	 * 
-	 * @param drugOrderBatch a set of DrugOrders
-	 * @param name a name for the work order
+	 * @param drugOrderBatch The {@link DrugOrder}s to save.
+	 * @param name The name for the work order
 	 * @should save DrugOrders
 	 * @should save WorkOrders
 	 * @should save inventory transactions if service is available
+	 * @return The pharmacy work order that was created to service the drug order.
 	 */
 	public WorkOrder addDrugOrderBatch(Set<DrugOrder> drugOrderBatch, String name);
 
+	/**
+	 * Saves a batch of {@link DrugOrder}s.
+	 * @param drugOrderBatch The {@link DrugOrder}s to save.
+	 * @return The pharmacy work order that was created to service the drug order.
+	 */
 	public WorkOrder addDrugOrderBatch(Set<DrugOrder> drugOrderBatch);
 }

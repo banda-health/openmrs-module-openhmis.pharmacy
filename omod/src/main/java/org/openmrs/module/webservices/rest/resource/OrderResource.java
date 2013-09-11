@@ -17,7 +17,7 @@ import org.openmrs.DrugOrder;
 import org.openmrs.Order;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.openhmis.pharmacy.api.IPharmacyService;
-import org.openmrs.module.openhmis.pharmacy.api.util.PharmacyWorkOrder;
+import org.openmrs.module.openhmis.pharmacy.api.util.PharmacyWorkOrderHelper;
 import org.openmrs.module.openhmis.pharmacy.web.ModuleRestConstants;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrder;
 import org.openmrs.module.webservices.rest.web.RequestContext;
@@ -35,7 +35,7 @@ public class OrderResource extends OrderResource1_8 {
 			if (order.getConcept() == null)
 				order.setConcept(order.getDrug().getConcept());
 			WorkOrder newWorkOrder = Context.getService(IPharmacyService.class).addDrugOrder(order);
-			return PharmacyWorkOrder.getDrugOrder(newWorkOrder);
+			return PharmacyWorkOrderHelper.getDrugOrder(newWorkOrder);
 		}
 		else
 			throw new ResourceDoesNotSupportOperationException("This resource only supports saving Drug Orders.");
