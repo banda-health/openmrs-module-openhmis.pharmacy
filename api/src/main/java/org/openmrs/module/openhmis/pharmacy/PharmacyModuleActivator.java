@@ -23,6 +23,7 @@ import org.openmrs.module.openhmis.pharmacy.api.util.ModuleConstants;
 import org.openmrs.module.openhmis.pharmacy.api.util.PharmacyWorkOrderHelper;
 import org.openmrs.module.openhmis.pharmacy.web.PharmacyWebConstants;
 import org.openmrs.module.openhmis.workorder.api.IWorkOrderService;
+import org.openmrs.module.openhmis.workorder.api.model.WorkOrderAttributeType;
 import org.openmrs.module.openhmis.workorder.api.model.WorkOrderType;
 import org.openmrs.module.openhmis.workorder.api.util.WorkOrderHelper;
 
@@ -94,13 +95,13 @@ public class PharmacyModuleActivator implements ModuleActivator {
 			WorkOrderType workOrderType = new WorkOrderType();
 			workOrderType.setName(messages.getMessage("openhmis.pharmacy.workOrderTypeName"));
 			workOrderType.setDescription(messages.getMessage("openhmis.pharmacy.workOrderTypeDescription"));
-			workOrderType.addAttributeType(
+			workOrderType.addAttributeType(new WorkOrderAttributeType(
 					messages.getMessage("openhmis.pharmacy.drugOrder.name"),
-					"org.openmrs.DrugOrder", null, null, true, 0);
-			workOrderType.addAttributeType(
+					"org.openmrs.DrugOrder", null, null, true));
+			workOrderType.addAttributeType(new WorkOrderAttributeType(
 					messages.getMessage("openhmis.pharmacy.inventoryTransaction.name"),
 					"org.openmrs.module.openhmis.inventory.api.model.StockRoomTransaction",
-					null, null, false, 1);
+					null, null, false));
 
 			// Ensure that this work order type exists, which creates it if it does not
 			WorkOrderHelper.ensureWorkOrderType(workOrderType, typeProperty);

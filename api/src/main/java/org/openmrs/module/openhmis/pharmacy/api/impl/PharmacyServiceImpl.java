@@ -74,7 +74,7 @@ public class PharmacyServiceImpl extends BaseOpenmrsService implements IPharmacy
 	@SuppressWarnings("deprecation")
 	public WorkOrder addDrugOrderBatch(Set<DrugOrder> drugOrderBatch, String orderName) {
 		WorkOrder workOrder = new WorkOrder();
-		workOrder.setWorkOrderType(PharmacyWorkOrderHelper.getWorkOrderType());
+		workOrder.setInstanceType(PharmacyWorkOrderHelper.getWorkOrderType());
 
 		try {
 			for (DrugOrder drugOrder : drugOrderBatch) {
@@ -102,7 +102,7 @@ public class PharmacyServiceImpl extends BaseOpenmrsService implements IPharmacy
 	
 	private WorkOrder createPharmacyWorkOrder(DrugOrder drugOrder, String name) {
 		WorkOrder workOrder = new WorkOrder();
-		workOrder.setWorkOrderType(PharmacyWorkOrderHelper.getWorkOrderType());
+		workOrder.setInstanceType(PharmacyWorkOrderHelper.getWorkOrderType());
 
 		setDrugOrder(workOrder, drugOrder);
 
@@ -129,7 +129,7 @@ public class PharmacyServiceImpl extends BaseOpenmrsService implements IPharmacy
 			workOrder.removeAttribute(attr);
 			type = attr.getAttributeType();
 		} else {
-			type = attributeTypeDataService.getByClass(workOrder.getWorkOrderType(), AttributableDrugOrder.class);
+			type = attributeTypeDataService.getByClass(workOrder.getInstanceType(), AttributableDrugOrder.class);
 		}
 
 		WorkOrderAttribute workOrderAttr = new WorkOrderAttribute();

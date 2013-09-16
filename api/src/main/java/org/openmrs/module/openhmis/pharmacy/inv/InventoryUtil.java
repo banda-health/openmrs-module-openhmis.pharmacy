@@ -59,7 +59,7 @@ public class InventoryUtil implements IInventoryUtil {
 			workOrder.removeAttribute(attr);
 			type = attr.getAttributeType();
 		} else {
-			type = workDataService.getByClass(workOrder.getWorkOrderType(), StockRoomTransaction.class);
+			type = workDataService.getByClass(workOrder.getInstanceType(), StockRoomTransaction.class);
 		}
 
 		WorkOrderAttribute workOrderAttr = new WorkOrderAttribute();
